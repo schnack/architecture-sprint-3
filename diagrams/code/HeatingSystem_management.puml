@@ -1,0 +1,27 @@
+@startuml
+title SmartHome Heating System management Device Sequence Diagram
+
+autonumber
+queue Kafka
+Kafka -> EventHandler : Новая команда
+EventHandler -> ServiceLayer : Параметры команды
+activate ServiceLayer
+ServiceLayer -> RepositoryDevice : Запрос параметров подключения
+activate RepositoryDevice
+database HeatingSystemDB as HeatingSystemDB
+RepositoryDevice -> HeatingSystemDB : Поиск параметров подключения
+activate HeatingSystemDB
+RepositoryDevice <-- HeatingSystemDB : Параметры подключения
+deactivate HeatingSystemDB
+ServiceLayer <-- RepositoryDevice : Параметры подключения
+deactivate RepositoryDevice
+ServiceLayer -> CommandHandler : Отправка команды
+activate CommandHandler
+ServiceLayer <-- CommandHandler : Результат выполнения команды
+deactivate CommandHandler
+ServiceLayer -> NotificationService: Результат выполнения команды
+deactivate ServiceLayer
+activate NotificationService
+NotificationService -> Kafka: Отправка уведомления с результатом выполнения команды
+deactivate NotificationService
+@enduml

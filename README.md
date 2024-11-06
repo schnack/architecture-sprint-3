@@ -40,14 +40,27 @@
 #### C4 - Уровень компонентов
 
 ##### HealthSystem
-![HealthSystem_component](./diagrams/component/HealthSystem_component.png)
+![HeatingSystem_component](./diagrams/component/HeatingSystem_component.png)
 
 ##### Home
 ![Home_component](./diagrams/component/Home_component.png)
 
 #### C4 - Уровень кода
 
-TODO
+##### Последовательность добавления нового устройства
+![Home_edit_device](./diagrams/code/Home_edit_device.png)
+
+
+##### Последовательность добавления системы отопления
+![HeatingSystem_edit_device](./diagrams/code/HeatingSystem_edit_device.png)
+
+##### Последовательность управления системой отопления
+![HeatingSystem_management](./diagrams/code/HeatingSystem_management.png)
+
+
+# Задание 3
+
+ER-диаграмма
 
 
 ---

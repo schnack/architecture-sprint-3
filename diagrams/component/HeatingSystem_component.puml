@@ -1,17 +1,17 @@
 @startuml
-title SmartHome Health System Component Diagram
+title SmartHome Heating System Component Diagram
 
 top to bottom direction
 
 !includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
 
 Container_Boundary(SmartHome, "SmartHome system") {
-  Container(HealthSystem, "Health System", "Java, Spring", "Управление отопительной системой")
-  ContainerDb(HealthSystemDB, "Health System DB", "Postgresql", "Параметры подключения к системе отопления")
+  Container(HeatingSystem, "Heating System", "Java, Spring", "Управление отопительной системой")
+  ContainerDb(HeatingSystemDB, "Heating System DB", "Postgresql", "Параметры подключения к системе отопления")
   Container(EventBus, "EventBus", "Kafka", "Шина данных")
 }
 
-Container(HealthSystem, "Health System", "Java, Spring"){
+Container(HeatingSystem, "Heating System", "Java, Spring"){
     Component(PowerController, "PowerController", "Spring REST controller", "Включение/Отключение отопления пользователем")
     Component(EventHandler, "EventHandler", "Kafka", "Добавление/Удаление устройств, включение/отключение отопления")
     Component(ServiceLayer, "Service Layer", "", "Бизнес логика управления Системой отопления")
@@ -31,7 +31,7 @@ Rel(ServiceLayer, NotificationService, "Отправка телеметрии и
 
 Rel(CommandHandler, Heating, "Отправка команды в устройство")
 
-Rel(RepositoryDevice, HealthSystemDB, "Чтение/запись параметров подключения")
+Rel(RepositoryDevice, HeatingSystemDB, "Чтение/запись параметров подключения")
 
 Rel(NotificationService, EventBus, "Отправка телеметрии и статуса устройства")
 Rel(EventBus, EventHandler, "Добавление/удаление, Включение/Отключение системы отопления")
