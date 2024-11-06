@@ -1,0 +1,38 @@
+@startuml
+title SmartHome Health System Component Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(SmartHome, "SmartHome system") {
+  Container(HealthSystem, "Health System", "Java, Spring", "Управление отопительной системой")
+  ContainerDb(HealthSystemDB, "Health System DB", "Postgresql", "Параметры подключения к системе отопления")
+  Container(EventBus, "EventBus", "Kafka", "Шина данных")
+}
+
+Container(HealthSystem, "Health System", "Java, Spring"){
+    Component(PowerController, "PowerController", "Spring REST controller", "Включение/Отключение отопления пользователем")
+    Component(EventHandler, "EventHandler", "Kafka", "Добавление/Удаление устройств, включение/отключение отопления")
+    Component(ServiceLayer, "Service Layer", "", "Бизнес логика управления Системой отопления")
+    Component(RepositoryDevice, "Repository Device", "", "Логика доступа к данным")
+    Component(CommandHandler, "CommandHandler", "", "Управление устройством")
+    Component(NotificationService, "NotificationService", "Kafka", "Отправка событий в шину данных")
+}
+
+System_Ext(Heating, "Heating system", "Система отопления")
+
+Rel(EventHandler, ServiceLayer, "Параметры события")
+Rel(PowerController, ServiceLayer, "Включение/Отключение")
+
+Rel(ServiceLayer, CommandHandler, "Выполнение команды")
+Rel(ServiceLayer, RepositoryDevice, "Чтение/запись параметров подключения к устройству")
+Rel(ServiceLayer, NotificationService, "Отправка телеметрии и статуса устройства")
+
+Rel(CommandHandler, Heating, "Отправка команды в устройство")
+
+Rel(RepositoryDevice, HealthSystemDB, "Чтение/запись параметров подключения")
+
+Rel(NotificationService, EventBus, "Отправка телеметрии и статуса устройства")
+Rel(EventBus, EventHandler, "Добавление/удаление, Включение/Отключение системы отопления")
+@enduml
