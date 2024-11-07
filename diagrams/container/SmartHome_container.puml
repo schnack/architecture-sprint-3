@@ -1,0 +1,65 @@
+@startuml
+title Smart Home Container Diagram
+
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(User, "User", "Пользователь системы умный дом")
+System(SmartHome, "SmartHome", "Система управления умный домом")
+
+Container_Boundary(SmartHome, "SmartHome system"){
+    Container(WebApp, "Web Application", "", "Личный кабинет пользователя")
+    Container(APIGateway, "API gateway","", "")
+    Container(EventBus, "EventBus", "Kafka", "Шина данных")
+
+    Container(Scenarios, "Scenarios", "java, Spring", "Автоматизация управления умном домом")
+    ContainerDb(ScenariosDB, "ScenariosDB", "Postgresql", "Параметры сценариев управления умным домом")
+
+    Container(Account, "Account", "java, Spring", "Сервис управления учетными записями")
+    ContainerDb(AccountDB, "DatabaseAccount", "Postgresql", "Информация о учетных записях")
+
+    Container(Home, "Home", "java, Spring", "Сервис управления умным домом")
+    ContainerDb(HomeDB, "HomeDB", "Postgresql", "Информация о телеметрии устройств умного дома")
+
+    Container(HeatingSystem, "Heating system", "java, Spring", "Управление отопительной системой")
+    ContainerDb(HeatingSystemDB, "Heating System DB", "Postgresql", "Параметры подключения системе отопления")
+
+    Container(TemperatureSensor, "Temperature sensor", "java, Spring", "Управление датчиками температуры")
+    ContainerDb(TemperatureSensorDB, "Temperature sensor DB", "Postgresql", "Параметры подключения к датчику")
+
+}
+
+System_Ext(Heating, "Heating system", "Система отопления")
+System_Ext(TempSensor, "Temperature sensor", "Датчик температуры")
+
+Rel(User, WebApp, "Использование системы")
+
+Rel(WebApp, APIGateway, "")
+Rel(APIGateway, Account, "Аутентификация, регистрация, информация")
+Rel(APIGateway, Home, "Создание, добавление датчиков, информация об устройствах дома")
+Rel(APIGateway, HeatingSystem, "Включение/Отключение отопления")
+Rel(APIGateway, Scenarios, "Управление сценариями")
+
+Rel(HeatingSystem, Heating, "Чтение параметров, выполнение команд")
+Rel(TemperatureSensor, TempSensor, "Чтение параметров")
+
+Rel(Home, EventBus, "Добавление/Удаление устройств и команды управления")
+Rel(EventBus, Home, "Сбор статусов и телеметрии датчиков")
+Rel(HeatingSystem, EventBus, "Телеметрия и статус устройства")
+Rel(EventBus, HeatingSystem, "Команды управление")
+Rel(TemperatureSensor, EventBus, "Телеметрия")
+Rel(EventBus, TemperatureSensor, "Команды управления")
+Rel(Scenarios, EventBus, "Управление устройствами")
+Rel(EventBus, Scenarios, "Телеметрия")
+
+Rel(Scenarios, ScenariosDB, "Чтение/запись параметров сценария")
+Rel(Account, AccountDB, "Чтение/Запись информации о пользователях")
+
+Rel(Home, HomeDB, "Телеметрия")
+Rel(Account, AccountDB, "Чтение/Запись информации о пользователях")
+Rel(HeatingSystem, HeatingSystemDB, "Запись/чтение параметров подключения")
+Rel(TemperatureSensor, TemperatureSensorDB, "Запись/чтение параметров подключения")
+
+@enduml

@@ -1,0 +1,23 @@
+@startuml
+title SmartHome Heating System add device Sequence Diagram
+
+autonumber
+queue Kafka
+Kafka -> EventHandler : Событие Новое устройство
+EventHandler -> ServiceLayer : Добавление устройства
+activate ServiceLayer
+ServiceLayer -> RepositoryDevice : Добавление нового устройства
+activate RepositoryDevice
+database HeatingSystemDB as HeatingSystemDB
+RepositoryDevice -> HeatingSystemDB : Запись изменений
+activate HeatingSystemDB
+RepositoryDevice <-- HeatingSystemDB : Ок
+deactivate HeatingSystemDB
+ServiceLayer <-- RepositoryDevice : Ок
+deactivate RepositoryDevice
+ServiceLayer -> NotificationService: Статус добавления устройства.
+deactivate ServiceLayer
+activate NotificationService
+NotificationService -> Kafka: Отправка уведомления
+deactivate NotificationService
+@enduml

@@ -1,0 +1,47 @@
+@startuml
+title SmartHome Home Component Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(SmartHome, "SmartHome system") {
+  Container(Home, "Home", "Java, Spring", "Управление домом")
+  ContainerDb(HomeDB, "HomeDB", "Postgresql", "Информация о домах, комнатах, устройствах")
+  Container(EventBus, "EventBus", "Kafka", "Шина данных")
+}
+
+Container(Home, "Home", "Java, Spring"){
+    Component(HomeController, "HomeController", "Spring REST controller", "CRUD домами")
+    Component(RoomController, "RoomController", "Spring REST controller", "CRUD комнатами")
+    Component(DeviceController, "DeviceController", "Spring REST controller", "CRUD устройствами")
+    Component(InfoController, "InfoController", "Spring REST controller", "Телеметрия устройств умного дома")
+    Component(EventHandler, "EventHandler", "Kafka", "Добавление/Удаление устройств, включение/отключение отопления")
+    Component(NotificationService, "NotificationService", "Kafka", "Отправка событий в шину данных")
+    Component(ServiceLayer, "Service Layer", "", "Бизнес логика управления Системой отопления")
+    Component(RepositoryHome, "Repository Home", "", "Логика доступа к данным")
+    Component(RepositoryRoom, "Repository Room", "", "Логика доступа к данным")
+    Component(RepositoryDevice, "Repository Device", "", "Логика доступа к данным")
+    Component(RepositoryTelemetry, "Repository Telemetry", "", "Логика доступа к данным")
+}
+
+Rel(HomeController, ServiceLayer, "Чтение/Запись информации о домах")
+Rel(RoomController, ServiceLayer, "Чтение запись информации о комнатах")
+Rel(DeviceController, ServiceLayer, "Чтение/запись информации об устройствах")
+Rel(InfoController, ServiceLayer, "Чтение телеметрии")
+
+Rel(EventBus, EventHandler, "Телеметрия устройств")
+Rel(NotificationService, EventBus, "Добавление/Удаление устройств. Опрос статуса устройств")
+Rel(EventHandler, ServiceLayer, "Телеметрия устройств")
+Rel(ServiceLayer, NotificationService, "Добавление/Удаление устройств. Опрос статуса устройств")
+
+Rel(ServiceLayer, RepositoryHome, "Чтение/Запись данных")
+Rel(ServiceLayer, RepositoryRoom, "Чтение/Запись данных")
+Rel(ServiceLayer, RepositoryDevice, "Чтение/Запись данных")
+Rel(ServiceLayer, RepositoryTelemetry, "Чтение/Запись данных")
+
+Rel(RepositoryHome, HomeDB, "Чтение/Запись данных")
+Rel(RepositoryRoom, HomeDB, "Чтение/Запись данных")
+Rel(RepositoryDevice, HomeDB, "Чтение/Запись данных")
+Rel(RepositoryTelemetry, HomeDB, "Чтение/Запись данных")
+@enduml
