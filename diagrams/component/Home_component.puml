@@ -22,6 +22,7 @@ Container(Home, "Home", "Java, Spring"){
     Component(RepositoryHome, "Repository Home", "", "Логика доступа к данным")
     Component(RepositoryRoom, "Repository Room", "", "Логика доступа к данным")
     Component(RepositoryDevice, "Repository Device", "", "Логика доступа к данным")
+    Component(RepositoryTelemetry, "Repository Telemetry", "", "Логика доступа к данным")
 }
 
 Rel(HomeController, ServiceLayer, "Чтение/Запись информации о домах")
@@ -37,8 +38,10 @@ Rel(ServiceLayer, NotificationService, "Добавление/Удаление у
 Rel(ServiceLayer, RepositoryHome, "Чтение/Запись данных")
 Rel(ServiceLayer, RepositoryRoom, "Чтение/Запись данных")
 Rel(ServiceLayer, RepositoryDevice, "Чтение/Запись данных")
+Rel(ServiceLayer, RepositoryTelemetry, "Чтение/Запись данных")
 
 Rel(RepositoryHome, HomeDB, "Чтение/Запись данных")
 Rel(RepositoryRoom, HomeDB, "Чтение/Запись данных")
 Rel(RepositoryDevice, HomeDB, "Чтение/Запись данных")
+Rel(RepositoryTelemetry, HomeDB, "Чтение/Запись данных")
 @enduml
