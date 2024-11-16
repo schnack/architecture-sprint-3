@@ -1,4 +1,16 @@
-# Задание 1
+# 2 Часть
+## Задание 1
+
+RestAPI документация - [SmartHomeAPI](./api/SmartHomeAPI.yaml)
+
+AsyncAPI документация для микросервиса home [HomeAsyncApi](./api/home.yaml)
+AsyncAPI документация для микросервиса heatingSystem [HeatingSystem](./api/heating_system.yaml)
+
+## Задание 2 - 3 
+Не успеваю сделать.
+
+# 1 Часть
+## Задание 1
 
 ### 3 Домены и границы контекстов
 * Домен учетных записей пользователей.
@@ -18,7 +30,7 @@
 
 ![SmartHome_context](./diagrams/context/SmartHome_context.png)
 
-# Задание 2
+## Задание 2
 
 ### 1 Декомпозиция приложений на микросервисы
 * Микросервис Account - Отвечает за аутентификацию, регистрацию пользователей системы
@@ -56,7 +68,7 @@
 ![HeatingSystem_management](./diagrams/code/HeatingSystem_management.png)
 
 
-# Задание 3
+## Задание 3
 
 ER-диаграмма
 ![er](./diagrams/er/er.png)

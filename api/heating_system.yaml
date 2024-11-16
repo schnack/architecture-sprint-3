@@ -1,0 +1,142 @@
+asyncapi: 3.0.0
+info:
+  title: Heating system
+  version: 1.0.0
+  description: Микросервис управления системой отопления
+
+servers:
+  Dev:
+    host: localhost:8092
+    description: Development
+    protocol: kafka
+
+channels:
+  addHeatingSystem:
+    description: Подключение новых устройств отопления
+    address: add_heating_system
+    messages:
+      newHeatingSystem:
+        $ref: '#/components/messages/newHeatingSystem'
+
+  delHeatingSystem:
+    description: Удаление устройств отопления
+    address: del_heating_system
+    messages:
+      idHeatingSystem:
+        $ref: "#/components/messages/deviceId"
+
+  statusHeatingSystem:
+    description: Текущий статус работы системы отопления и телеметрия
+    address: status_heating_system
+    messages:
+      statusHeatingSystem:
+        $ref: "#/components/messages/statusHeatingSystem"
+
+  turnOnOffHeatingSystem:
+    description: Включение и отключение отопления
+    address: turn_on_off_heating_system
+    messages:
+      controlHeatingSystem:
+        $ref: "#/components/messages/controlHeatingSystem"
+
+  setupTemperature:
+    description: Установка целевой температуры дома
+    address: target_temp_heating_system
+    messages:
+      setupHeatingSystem:
+        $ref: "#/components/messages/setupHeatingSystem"
+
+
+operations:
+  createHeatingSystem:
+    action: receive
+    channel:
+      $ref: '#/channels/addHeatingSystem'
+
+  deletingHeatingSystem:
+    action: receive
+    channel:
+      $ref: '#/channels/delHeatingSystem'
+
+  statusHeatingSystem:
+    title: "Статус устройства"
+    action: send
+    channel:
+      $ref: '#/channels/statusHeatingSystem'
+
+  controlHeatingSystem:
+    action: receive
+    channel:
+      $ref: '#/channels/turnOnOffHeatingSystem'
+
+  setupHeatingSystem:
+    action: receive
+    channel:
+      $ref: '#/channels/setupTemperature'
+
+components:
+  messages:
+    newHeatingSystem:
+      payload:
+        type: object
+        properties:
+          deviceId:
+            type: string
+            format: uuid
+          serialNumber:
+            type: string
+          secretKey:
+            type: string
+          addressHeatingSystem:
+            type: string
+
+    deviceId:
+      payload:
+        type: object
+        properties:
+          deviceId:
+            type: string
+            format: uuid
+
+    statusHeatingSystem:
+      payload:
+        type: object
+        properties:
+          deviceId:
+            type: string
+            format: uuid
+          currentTemp:
+            type: number
+            format: float
+          targetTemp:
+            type: number
+            format: float
+          status:
+            type: string
+            enum:
+              - created
+              - enable
+              - disable
+              - error
+              - deleted
+
+    controlHeatingSystem:
+      payload:
+        type: object
+        properties:
+          deviceId:
+            type: string
+            format: uuid
+          isEnable:
+            type: boolean
+
+    setupHeatingSystem:
+      payload:
+        type: object
+        properties:
+          deviceId:
+            type: string
+            format: uuid
+          targetTemp:
+            type: number
+            format: float
