@@ -1,0 +1,44 @@
+@startuml
+title SmartHome Home Add Device Sequence Diagram
+autonumber
+
+activate DeviceController
+DeviceController -> ServiceLayer : Добавление нового устройства
+activate ServiceLayer
+ServiceLayer -> RepositoryDevice : Новое устройство
+database HomeDB
+activate RepositoryDevice
+RepositoryDevice -> HomeDB : Добавление устройства со статусом creating
+activate HomeDB
+RepositoryDevice <-- HomeDB: Оk
+deactivate HomeDB
+ServiceLayer <-- RepositoryDevice: Ок
+deactivate RepositoryDevice
+ServiceLayer->NotificationService : Команда на добавление устройства
+activate NotificationService
+DeviceController <- ServiceLayer : Устройство в процессе добавления
+deactivate ServiceLayer
+deactivate DeviceController
+queue Kafka
+NotificationService -> Kafka : Отправка команды на добавление устройства
+deactivate NotificationService
+Kafka -> EventHandler : Статус добавления устройства
+activate EventHandler
+EventHandler -> ServiceLayer : Новое устройство добавлено
+deactivate EventHandler
+activate ServiceLayer
+ServiceLayer -> RepositoryDevice : Установка статуса work
+activate RepositoryDevice
+RepositoryDevice -> HomeDB: Обновление статуса
+activate HomeDB
+RepositoryDevice <-- HomeDB: Оk
+deactivate HomeDB
+ServiceLayer <-- RepositoryDevice: Ок
+deactivate RepositoryDevice
+ServiceLayer -> NotificationService: Зарегистрировано новое устройство
+deactivate ServiceLayer
+activate NotificationService
+NotificationService -> Kafka : Отправка уведомления
+deactivate NotificationService
+
+@enduml

@@ -1,0 +1,1177 @@
+openapi: 3.1.0
+info:
+  title: Smart Home
+  description: Smart Home API
+  version: 1.0.0
+servers:
+  - url: 'https://localhost:8080/v1'
+    description: Development server
+
+components:
+  schemas:
+
+    ErrorModel:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+    SignIn:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    Jwt:
+      type: object
+      properties:
+        jwt:
+          type: string
+
+    CreateAccount:
+      type: object
+      required:
+        - username
+        - password
+        - email
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+          format: email
+
+    Account:
+      type: object
+      required:
+        - username
+        - email
+      properties:
+        username:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+
+    CreateHouse:
+      type: object
+      required:
+        - address
+      properties:
+        address:
+          type: string
+        name:
+          type: string
+
+    House:
+      type: object
+      required:
+        - id
+        - address
+      properties:
+        id:
+          type: string
+          format: uuid
+        address:
+          type: string
+        name:
+          type: string
+
+    CreateRoom:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+
+    Room:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    CreateDevice:
+      type: object
+      required:
+        - name
+        - type
+        - status
+        - serialNumber
+        - secretKey
+        - url
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - TemperatureSensor
+            - HeatingSystem
+        status:
+          type: "string"
+          enum:
+            - Create
+            - Work
+            - Error
+        serialNumber:
+          type: string
+        secretKey:
+          type: string
+        url:
+          type: string
+
+    Device:
+      type: object
+      required:
+        - name
+        - type
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - TemperatureSensor
+            - HeatingSystem
+        status:
+          type: string
+          enum:
+            - Create
+            - Work
+            - Error
+
+    CreateScenario:
+      type: object
+      required:
+        - name
+        - scenario
+        - isEnable
+      properties:
+        name:
+          type: string
+        scenario:
+          type: string
+        isEnable:
+          type: bool
+
+    Scenario:
+      type: object
+      required:
+        - id
+        - scenario
+        - isEnable
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        scenario:
+          type: string
+        isEnable:
+          type: bool
+
+    Telemetry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+            - Temperature
+        name:
+          type: string
+        value:
+          type: number
+          format: float
+
+    HeatingSystem:
+      type: object
+      properties:
+        targetTemp:
+          type: number
+          format: float
+        isEnable:
+          type: bool
+
+
+  parameters:
+    skipParam:
+      name: skip
+      in: query
+      description: Количество пропускаемых объектов
+      schema:
+        type: integer
+        format: int32
+    limitParam:
+      name: limit
+      in: query
+      description: Максимальное количество записей
+      schema:
+        type: integer
+        format: int32
+
+  responses:
+    NotFound:
+      description: "Объект не найден"
+      content:
+        'application/json': { }
+    IllegalInput:
+      description: "Не корректный запрос"
+      content:
+        'application/json': { }
+    Unauthorized:
+      description: "Не авторизован"
+      content:
+        'application/json': { }
+    GeneralError:
+      description: "Ошибка"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorModel'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+
+paths:
+  /account/signIn:
+    post:
+      description: "Аутентификация пользователя"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignIn'
+      responses:
+        '200':
+          description: "Ключ авторизации"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Jwt"
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /account:
+    post:
+      description: "Регистрация пользователя"
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccount'
+      responses:
+        '200':
+          description: "Ключ авторизации"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Jwt"
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /account/{id}:
+    get:
+      description: "Информация о пользователе"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: ID Аккаунта
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Информация об аккаунте"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+    put:
+      description: "Обновить информацию о пользователе"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: ID Аккаунта
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        '200':
+          description: "Успешное обновление аккаунта"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home:
+    get:
+      description: "Возвращает список домов клиента"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/skipParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Список домов"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  houses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/House'
+                  numberHouses:
+                    type: integer
+                    format: int64
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+    post:
+      description: "Создание нового дома"
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHouse'
+      responses:
+        '200':
+          description: "Успешное создание дома"
+          content:
+            application/json: {}
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home/{id}:
+    get:
+      description: "Информация о доме"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: ID Дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Информация о доме"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/House"
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+    put:
+      description: "Изменить информацию о доме"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHouse'
+      responses:
+        '200':
+          description: "Успешное обновление дома"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+    delete:
+      description: "Удалить Дом"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Дом удален"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home/{homeId}/room:
+    get:
+      description: "Возвращает список комнат в доме"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID Дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/skipParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Список комнат в доме"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  houses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Room'
+                  numberRooms:
+                    type: integer
+                    format: int64
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+    post:
+      description: "Создание комнаты"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoom'
+      responses:
+        '200':
+          description: "Успешное создание комнаты"
+          content:
+            application/json: {}
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home/{homeId}/room/{roomId}:
+    get:
+      description: "Информация о комнате"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Информация о комнате"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+    put:
+      description: "Изменить информацию о комнате"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoom'
+      responses:
+        '200':
+          description: "Успешное обновление комнаты"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+    delete:
+      description: "Удалить Комнату"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Комната удалена"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home/{homeId}/room/{roomId}/device:
+    get:
+      description: "Возвращает все датчики в комнате"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID Дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/skipParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "список датчиков в комнате"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  houses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  numberDevice:
+                    type: integer
+                    format: int64
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+    post:
+      description: "Добавление нового датчика"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID Дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDevice'
+      responses:
+        '200':
+          description: "Добавлен датчик"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home/{homeId}/room/{roomId}/device/{deviceId}:
+    get:
+      description: "Информация о датчике"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: deviceId
+          in: path
+          description: ID устройства
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Информация о датчике"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+    put:
+      description: "Изменить параметры датчика"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: deviceId
+          in: path
+          description: ID устройства
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDevice'
+      responses:
+        '200':
+          description: "Датчики обновлены"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+    delete:
+      description: "Удалить датчик"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: deviceId
+          in: path
+          description: ID устройства
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Датчик успешно удален"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home/{homeId}/room/{roomId}/device/{deviceId}/HeatingSystem:
+    get:
+      description: "Получить параметры отопительной системы"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID Дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: deviceId
+          in: path
+          description: ID устройства
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Текущие параметры отопительной системы"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeatingSystem'
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+    put:
+      description: "Изменить параметры работы отопительной системы"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: deviceId
+          in: path
+          description: ID устройства
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeatingSystem'
+      responses:
+        '200':
+          description: "Успешное изменения параметров отопительной системы"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home/{homeId}/room/{roomId}/device/{deviceId}/telemetry:
+    get:
+      description: "Возвращает телеметрию датчика"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID Дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roomId
+          in: path
+          description: ID комнаты
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: deviceId
+          in: path
+          description: ID устройства
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/skipParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Телеметрия"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  telemetry:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Telemetry'
+                  numberTelemetry:
+                    type: integer
+                    format: int64
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home/{homeId}/scenario:
+    get:
+      description: "Возвращает список сценариев для этого дома"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID Дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/skipParam'
+        - $ref: '#/components/parameters/limitParam'
+      responses:
+        '200':
+          description: "Список сценариев"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  houses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Scenario'
+                  numberScenario:
+                    type: integer
+                    format: int64
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+    post:
+      description: "Создание нового сценария"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScenario'
+      responses:
+        '200':
+          description: "Успешное создание сценария"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+  /home/{homeId}/scenario/{scenarioId}:
+    get:
+      description: "Информация о сценария"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: scenarioId
+          in: path
+          description: ID сценария
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Информация о сценарии"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scenario"
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
+    put:
+      description: "Изменить информацию о сценарии"
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: homeId
+          in: path
+          description: ID дома
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: scenarioId
+          in: path
+          description: ID сценария
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScenario'
+      responses:
+        '200':
+          description: "Успешное обновление сценария"
+          content:
+            application/json: { }
+        '400':
+          $ref: "#/components/responses/IllegalInput"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        'default':
+          $ref: "#/components/responses/GeneralError"
+
